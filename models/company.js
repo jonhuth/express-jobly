@@ -3,6 +3,7 @@ const bcrypt = require("bcrypt");
 const ExpressError = require("../helpers/expressError");
 
 const { BCRYPT_WORK_FACTOR } = require("../config");
+const sqlForPartialUpdate = require("../helpers/partialUpdate");
 
 // Company class used for records in companies table in db
 class Company {
@@ -63,11 +64,35 @@ class Company {
     WHERE handle=$1
     `, [handle]);
 
-    console.log(result);
+    // console.log(result);
 
     return result.rows[0];
   }
+
+  static async update(handle, body) {
+    let {query, values} = sqlForPartialUpdate('companies', body, 'handle', handle);
+    
+    let result = await db.query(query, values);
+
+    return result.rows[0];
+  }
+
+  static async delete(handle) {
+    const result = await db.query(`
+    DELETE FROM companies
+    WHERE handle=$1
+    RETURNING handle
+    `, [handle]);
+
+    if (result.rows.length === 0) {
+      throw { message: `${handle} does not exist`, status: 404};
+    }
+
+    return "Company deleted";
+  }
 }
+
+
 
 
 module.exports = Company;
