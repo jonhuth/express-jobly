@@ -12,7 +12,7 @@ const router = new Router();
 router.get("/", ensureLoggedIn, async function (req, res, next) {
   try {
     let jobs = await Job.all(req.query);
-    console.log('request object: ...', req);
+    // console.log('req.user ...', req);
 
     return res.json({ jobs });
   } catch (err) {
