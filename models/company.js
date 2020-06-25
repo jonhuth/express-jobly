@@ -7,17 +7,17 @@ const sqlForPartialUpdate = require("../helpers/partialUpdate");
 
 // Company class used for records in companies table in db
 class Company {
-  static async all({nameSearch, minEmployees, maxEmployees}) {
-    
-    if (minEmployees > maxEmployees) {
-      return;
-    }
+  static async all({ nameSearch, minEmployees, maxEmployees }) {
 
+    if (minEmployees > maxEmployees) {
+      throw new ExpressError("invalid min and max", 400);
+    }
 
     let whereFilters = [];
     if (nameSearch) {
       whereFilters.push(`name INCLUDES "${nameSearch}"`);
     }
+
     if (minEmployees) {
       whereFilters.push(`num_employees > ${minEmployees}`);
     }
@@ -27,26 +27,26 @@ class Company {
     }
 
     if (whereFilters.length > 0) {
-      const where = 'WHERE ' + whereFilters.join(',');
+      const whereQuery = 'WHERE ' + whereFilters.join(',');
       const results = await db.query(`
       SELECT handle, name 
-      FROM companies 
-      $1
-      ORDER BY handle
-      `, [where]);
+        FROM companies 
+        $1
+        ORDER BY handle
+      `, [whereQuery]);
       return results.rows;
     }
     const results = await db.query(`
     SELECT handle, name 
-    FROM companies
-    ORDER BY handle
+      FROM companies
+      ORDER BY handle
     `);
 
     // ex: name INCLUDES "nameSearch",num_employees > 2,num_employees < 5
     return results.rows;
   }
 
-  static async create({handle, name, num_employees, description, logo_url}) {
+  static async create({ handle, name, num_employees, description, logo_url }) {
     const result = await db.query(`
     INSERT INTO companies (handle, name, num_employees, 
       description, logo_url)
@@ -64,14 +64,16 @@ class Company {
     WHERE handle=$1
     `, [handle]);
 
-    // console.log(result);
+    if (result.rows.length === 0) {
+      throw new ExpressError(`${handle} does not exist`, 400);
+    }
 
     return result.rows[0];
   }
 
   static async update(handle, body) {
-    let {query, values} = sqlForPartialUpdate('companies', body, 'handle', handle);
-    
+    let { query, values } = sqlForPartialUpdate('companies', body, 'handle', handle);
+
     let result = await db.query(query, values);
 
     return result.rows[0];
@@ -85,7 +87,7 @@ class Company {
     `, [handle]);
 
     if (result.rows.length === 0) {
-      throw { message: `${handle} does not exist`, status: 404};
+      throw new ExpressError(`${handle} does not exist`, 404);
     }
 
     return "Company deleted";

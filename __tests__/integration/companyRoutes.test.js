@@ -62,12 +62,12 @@ describe("Company Routes Test", function () {
     let response = await request(app)
       .post("/companies")
       .send({
-          "handle": "apple",
-          "name": "Apple Inc",
-          "num_employees": 27,
-          "description": "We make a lot of money",
-          "logo_url": "this is optional"
-        }
+        "handle": "apple",
+        "name": "Apple Inc",
+        "num_employees": 27,
+        "description": "We make a lot of money",
+        "logo_url": "this is optional"
+      }
       );
 
     expect(response.statusCode).toBe(201);
@@ -94,22 +94,22 @@ describe("Company Routes Test", function () {
       }
     });
 
-    // sad path
+    // sad path - remove required key value pair
     let badResponse = await request(app)
       .post("/companies")
       .send({
-          "handle": "apple",
-          "num_employees": 27,
-          "description": "We make a lot of money",
-          "logo_url": "this is optional"
-        });
-
-      expect(badResponse.body).toEqual({
-        "status": 400,
-        "message": [
-          "instance requires property \"name\""
-        ]
+        "handle": "apple",
+        "num_employees": 27,
+        "description": "We make a lot of money",
+        "logo_url": "this is optional"
       });
+
+    expect(badResponse.body).toEqual({
+      "status": 400,
+      "message": [
+        "instance requires property \"name\""
+      ]
+    });
   });
 
   test("PATCH company record", async function () {
@@ -117,11 +117,9 @@ describe("Company Routes Test", function () {
     let response = await request(app)
       .patch("/companies/microsoft")
       .send({
-          "num_employees": 56
-        }
+        "num_employees": 56
+      }
       );
-
-    console.log('response body...', response.body);
 
     expect(response.statusCode).toBe(200);
     expect(response.body).toEqual({
@@ -147,19 +145,19 @@ describe("Company Routes Test", function () {
       }
     });
 
-    // sad path
+    // sad path - input incorrect type for field, caught by json schema
     let badResponse = await request(app)
       .patch("/companies/microsoft")
       .send({
-          "num_employees": "54"
-        });
-
-      expect(badResponse.body).toEqual({
-        "status": 400,
-        "message": [
-          "instance.num_employees is not of a type(s) integer"
-        ]
+        "num_employees": "54"
       });
+
+    expect(badResponse.body).toEqual({
+      "status": 400,
+      "message": [
+        "instance.num_employees is not of a type(s) integer"
+      ]
+    });
   });
 
   test("Able to delete a company", async function () {
@@ -178,8 +176,6 @@ describe("Company Routes Test", function () {
       "companies": []
     });
 
-
-
     // sad path
     let badResponse = await request(app)
       .delete("/companies/yahoo");
@@ -189,11 +185,6 @@ describe("Company Routes Test", function () {
       "message": "yahoo does not exist"
     })
   });
-  
-
-
-
-
 });
 
 afterAll(async function () {

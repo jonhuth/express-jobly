@@ -11,9 +11,7 @@ const router = new Router();
 router.get("/", async function (req, res, next) {
   try {
     let companies = await Company.all(req.query);
-    if (!companies) {
-      throw new ExpressError("invalid min and max", 400);
-    }
+
     return res.json({ companies });
   } catch (err) {
     return next(err);
@@ -40,9 +38,7 @@ router.post("/", async function (req, res, next) {
 router.get("/:handle", async function (req, res, next) {
   try {
     let company = await Company.get(req.params.handle);
-    if (!company) {
-      throw new ExpressError(`${req.params.handle} does not exist`, 400);
-    }
+    
 
     return res.json({ company });
   } catch (err) {
