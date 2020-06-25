@@ -61,13 +61,16 @@ class Company {
     const result = await db.query(`
     SELECT handle, name, num_employees, description, logo_url
     FROM companies
-    WHERE handle=$1
+    WHERE handle=$1 
     `, [handle]);
 
+    const jobs = await db.query(`
+    SELECT title, company_handle from jobs
+    WHERE company_handle = $1`, [handle])
     if (result.rows.length === 0) {
       throw new ExpressError(`${handle} does not exist`, 400);
     }
-
+    result.rows[0].jobs = jobs.rows;
     return result.rows[0];
   }
 

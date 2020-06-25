@@ -4,11 +4,12 @@ const jsonschema = require("jsonschema");
 const companySchema = require("../schemas/companySchema.json");
 const patchCompanySchema = require("../schemas/patchCompanySchema.json");
 const ExpressError = require("../helpers/expressError");
+const {ensureLoggedIn, ensureCorrectUser, ensureAdmin} = require("../middleware/auth");
 
 const router = new Router();
 
 // get list of companies
-router.get("/", async function (req, res, next) {
+router.get("/",ensureLoggedIn, async function (req, res, next) {
   try {
     let companies = await Company.all(req.query);
 
@@ -18,7 +19,7 @@ router.get("/", async function (req, res, next) {
   }
 });
 
-router.post("/", async function (req, res, next) {
+router.post("/", ensureAdmin, async function (req, res, next) {
   try {
     const result = jsonschema.validate(req.body, companySchema);
     if (!result.valid) {
@@ -35,7 +36,7 @@ router.post("/", async function (req, res, next) {
   }
 });
 
-router.get("/:handle", async function (req, res, next) {
+router.get("/:handle", ensureLoggedIn, async function (req, res, next) {
   try {
     let company = await Company.get(req.params.handle);
     
@@ -46,7 +47,7 @@ router.get("/:handle", async function (req, res, next) {
   }
 });
 
-router.patch("/:handle", async function (req, res, next) {
+router.patch("/:handle", ensureAdmin, async function (req, res, next) {
   try {
     const result = jsonschema.validate(req.body, patchCompanySchema);
     if (!result.valid) {
@@ -65,7 +66,7 @@ router.patch("/:handle", async function (req, res, next) {
   }
 });
 
-router.delete("/:handle", async function (req, res, next) {
+router.delete("/:handle", ensureAdmin, async function (req, res, next) {
   try {
     let message = await Company.delete(req.params.handle);
 
