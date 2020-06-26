@@ -1,6 +1,7 @@
 DROP TABLE IF EXISTS jobs;
 DROP TABLE IF EXISTS companies;
 DROP TABLE IF EXISTS users;
+DROP TABLE IF EXISTS applications;
 
 CREATE TABLE companies (
     handle text PRIMARY KEY,
@@ -27,4 +28,14 @@ CREATE TABLE users (
     email text NOT NULL UNIQUE,
     photo_url text,
     is_admin boolean NOT NULL DEFAULT false
-)
+);
+
+
+CREATE TYPE state AS ENUM ('interested', 'applied', 'accepted', 'rejected');
+CREATE TABLE applications (
+    username text REFERENCES users, 
+    job_id INTEGER REFERENCES jobs,
+    state state NOT NULL,
+    created_at timestamp without time zone DEFAULT CURRENT_TIMESTAMP,
+    PRIMARY KEY (username, job_id)
+);

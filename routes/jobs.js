@@ -46,6 +46,18 @@ router.get("/:id", ensureLoggedIn, async function (req, res, next) {
   }
 });
 
+router.post("/:id/apply", ensureLoggedIn, async function (req, res, next) {
+  try {
+    let { state } = req.body;
+    console.log('inputs...', req.user.username, req.params.id, state);
+    let message = await Job.apply(req.user.username, req.params.id, state);
+    return res.json({ message });
+
+  } catch (err) {
+    return next(err);
+  }
+});
+
 router.patch("/:id", ensureAdmin, async function (req, res, next) {
   try {
     const result = jsonschema.validate(req.body, patchjobSchema);

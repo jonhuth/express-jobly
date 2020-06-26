@@ -21,6 +21,7 @@ router.get("/", async function (req, res, next) {
   }
 });
 
+// create new user
 router.post("/", async function (req, res, next) {
   try {
     const result = jsonschema.validate(req.body, userSchema);

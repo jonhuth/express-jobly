@@ -38,17 +38,35 @@ class User {
   }
 
   static async get(username) {
-    const result = await db.query(`
+    let user = await db.query(`
     SELECT username, first_name, last_name, email, photo_url, is_admin
     FROM users
     WHERE username=$1
     `, [username]);
 
-    if (result.rows.length === 0) {
+    const result = await db.query(`
+    SELECT a.job_id, a.state, a.created_at
+    FROM users AS u LEFT JOIN applications AS a 
+      ON a.username = u.username
+    LEFT JOIN jobs AS j
+      ON a.job_id = j.id
+    WHERE u.username = $1
+    `, [username]);
+
+    console.log('related jobs...', result.rows);
+    // if user has not engaged any jobs; jobs : []
+    if (!result.rows[0].job_id) {
+      result.rows.pop();
+    }
+
+    user.rows[0].jobs = result.rows;
+
+
+    if (user.rows.length === 0) {
       throw new ExpressError(`${username} does not exist`, 400);
     }
 
-    return result.rows[0];
+    return user.rows[0];
   }
 
   static async update(username, body) {

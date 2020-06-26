@@ -85,6 +85,19 @@ class Job {
     }
     return "Job deleted";
   }
+
+  static async apply(username, job_id, state) {
+    const result = await db.query(`
+    INSERT INTO applications (username, job_id, state, created_at)
+      VALUES ($1, $2, $3, CURRENT_TIMESTAMP)
+      RETURNING username, job_id, state, created_at
+    `, [username, job_id, state]);
+    if (result.rows.length === 0) {
+      throw new ExpressError(`${id} does not exist`, 404);
+    }
+    return result.rows[0].state;
+
+  }
 }
 
 module.exports = Job;
